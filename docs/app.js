@@ -45,8 +45,69 @@ function renderCards(){const items=dishes.filter(d=>(activeCat==='Todos'||d.cate
  $('#dishGrid').innerHTML=items.map(d=>`<article class="dish-card"><div class="dish-photo"><img loading="lazy" src="${esc(d.image)}" alt="Fotografía ilustrativa de ${esc(d.name)}"/><span class="dish-badge">${esc(d.badge)}</span><button class="dish-photo-action" data-view="${d.id}" aria-label="Ver modelo 3D de ${esc(d.name)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 2 8 4.6v9L12 20l-8-4.4v-9L12 2Z"/><path d="m4 6.6 8 4.6 8-4.6M12 11.2V20"/></svg> Explorar en 3D</button></div><div class="dish-content"><span class="dish-meta">${esc(d.category.toUpperCase())}</span><div class="dish-row"><h3>${esc(d.name)}</h3><span class="dish-price">${money(d.price)}</span></div><p class="dish-desc">${esc(d.desc)}</p><div class="dish-foot"><span>Vista 3D disponible</span><button data-view="${d.id}" aria-label="Ver detalles de ${esc(d.name)}">Ver plato <span aria-hidden="true">↗</span></button></div></div></article>`).join('');
  $('#emptyState').hidden=items.length!==0;
 }
-function openDish(id){const d=dishes.find(x=>x.id===id);if(!d)return;selected=d;$('#detailName').textContent=d.name;$('#detailCategory').textContent=d.category.toUpperCase()+' · CARTA 3D';$('#detailDescription').textContent=d.desc;$('#detailIngredients').textContent=d.ingredients;$('#detailPrice').textContent=money(d.price);$('#arFallback').hidden=false;
- const viewer=$('#dishViewer');viewer.setAttribute('alt',`Modelo 3D ilustrativo de ${d.name}`);viewer.setAttribute('src',d.model);viewer.setAttribute('camera-target','auto auto auto');$('#progressFill').style.width='0%';openDialog($('#dishDialog'));}
+// En Android, Scene Viewer de Google puede cerrarse y bloquear la aplicación Google.
+// No usamos scene-viewer: WebXR (Chrome) o Quick Look (iOS) son los únicos modos.
+let arCheckId=0, arReady=false;
+function arNotice(message){const box=$('#arFallback');box.textContent=message;box.hidden=false;}
+function resetARButton(){
+ arCheckId++;arReady=false;
+ const button=$('#arButton');button.disabled=true;
+ $('#arButtonLabel').textContent='Comprobando compatibilidad…';
+ const box=$('#arFallback');box.textContent='';box.hidden=true;
+}
+async function updateARAvailability(){
+ const viewer=$('#dishViewer');const check=++arCheckId;
+ const button=$('#arButton');const label=$('#arButtonLabel');
+ button.disabled=true;arReady=false;label.textContent='Comprobando compatibilidad…';
+ const ios=/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+ const android=/Android/i.test(navigator.userAgent);
+ const secure=window.isSecureContext;
+ if(!secure){label.textContent='Cómo activar la realidad aumentada';arNotice('La cámara AR necesita HTTPS. Abre la carta desde el enlace público de GitHub Pages.');button.disabled=false;return;}
+ try{
+  if(!customElements.get('model-viewer'))await customElements.whenDefined('model-viewer');
+  if(check!==arCheckId)return;
+  let supported=false;
+  if(android){
+   // Comprobar WebXR antes de intentar abrir un visor externo.
+   supported=!!(navigator.xr && await navigator.xr.isSessionSupported('immersive-ar'));
+  }else if(ios){
+   // En iPhone/iPad se utiliza Quick Look nativo.
+   await viewer.updateComplete;
+   supported=!!viewer.canActivateAR;
+  }else{
+   supported=!!(navigator.xr && await navigator.xr.isSessionSupported('immersive-ar'));
+  }
+  if(check!==arCheckId)return;
+  arReady=supported;
+  label.textContent=supported?'Ver en mi mesa (AR)':'Cómo activar la vista en mi mesa';
+  button.disabled=false;
+  if(!supported){
+   arNotice(android
+    ? 'Para intentar AR, abre esta página directamente en Google Chrome (no en el navegador interno de otra aplicación), actualiza Chrome y Servicios de Google Play para RA y comprueba que el teléfono sea compatible. Mientras tanto, puedes girar el plato en 3D aquí.'
+    : 'Este navegador o teléfono no ofrece AR compatible. Puedes seguir explorando y girando el plato en 3D.');
+  }
+ }catch(error){
+  if(check!==arCheckId)return;
+  arReady=false;button.disabled=false;
+  label.textContent='Cómo activar la vista en mi mesa';
+  arNotice('No fue posible comprobar la realidad aumentada. Prueba con Google Chrome actualizado y Servicios de Google Play para RA, o usa la vista 3D.');
+ }
+}
+function launchAR(){
+ if(!arReady){
+  arNotice('Abre el enlace de esta carta directamente en Google Chrome, actualiza Chrome y Servicios de Google Play para RA y permite el acceso a la cámara. Si sigue fallando, prueba otra aplicación de AR para descartar un problema del servicio del teléfono. La vista 3D continúa disponible.');
+  return;
+ }
+ // Debe iniciarse directamente dentro del gesto del usuario.
+ try{const result=$('#dishViewer').activateAR();if(result && typeof result.catch==='function')result.catch(()=>{
+  arNotice('No pudo iniciarse la cámara AR. Comprueba los permisos de Chrome, Servicios de Google Play para RA y la compatibilidad del dispositivo. Puedes seguir viendo el plato en 3D.');
+ });}catch{
+  arNotice('El dispositivo no pudo iniciar AR. Usa la vista 3D o prueba Chrome y los servicios de realidad aumentada actualizados.');
+ }
+}
+
+function openDish(id){const d=dishes.find(x=>x.id===id);if(!d)return;selected=d;$('#detailName').textContent=d.name;$('#detailCategory').textContent=d.category.toUpperCase()+' · CARTA 3D';$('#detailDescription').textContent=d.desc;$('#detailIngredients').textContent=d.ingredients;$('#detailPrice').textContent=money(d.price);resetARButton();
+ const viewer=$('#dishViewer');viewer.setAttribute('alt',`Modelo 3D ilustrativo de ${d.name}`);viewer.setAttribute('src',d.model);viewer.setAttribute('camera-target','auto auto auto');$('#progressFill').style.width='0%';openDialog($('#dishDialog'));void updateARAvailability();}
 function totals(){let count=0,total=0;for(const [k,n] of Object.entries(order)){const d=dishes.find(x=>x.id===k);if(d){count+=n;total+=d.price*n;}}return {count,total};}
 function updateOrder(){let {count,total}=totals();$('#openOrder').hidden=count===0;$('#orderCount').textContent=count;$('#orderTotal').textContent=money(total);$('#fullTotal').textContent=money(total);try{localStorage.setItem('casaOlivaOrder',JSON.stringify(order))}catch{}
  $('#orderItems').innerHTML=count===0?'<p class="order-empty">Aún no has elegido platos. Explora nuestra carta para añadir alguno.</p>':dishes.filter(d=>order[d.id]).map(d=>`<div class="order-row"><div><h3>${esc(d.name)}</h3><small>${money(d.price)} c/u</small></div><div class="order-row-right"><strong>${money(d.price*order[d.id])}</strong><div class="qty-controls"><button aria-label="Quitar un ${esc(d.name)}" data-qty="${d.id}" data-delta="-1">−</button><span>${order[d.id]}</span><button aria-label="Añadir un ${esc(d.name)}" data-qty="${d.id}" data-delta="1">+</button></div></div></div>`).join('');
@@ -73,9 +134,12 @@ document.querySelectorAll('.category-tabs button').forEach(b=>b.addEventListener
 $('#dishSearch').addEventListener('input',e=>{query=e.target.value.trim().toLocaleLowerCase('es');renderCards();});
 $('#resetFilters').addEventListener('click',()=>{activeCat='Todos';query='';$('#dishSearch').value='';document.querySelectorAll('.category-tabs button').forEach(b=>b.setAttribute('aria-selected',String(b.dataset.cat==='Todos')));renderCards();});
 $('#closeDish').addEventListener('click',()=>closeDialog($('#dishDialog')));
-$('#dishDialog').addEventListener('close',()=>{const v=$('#dishViewer');v.removeAttribute('src');});
+$('#dishDialog').addEventListener('close',()=>{arCheckId++;arReady=false;const v=$('#dishViewer');v.removeAttribute('src');});
 $('#dishViewer').addEventListener('progress',e=>{$('#progressFill').style.width=`${Math.round((e.detail?.totalProgress||0)*100)}%`;});
 $('#dishViewer').addEventListener('error',()=>toast('No se pudo cargar el modelo. Comprueba el archivo 3D.'));
+$('#arButton').addEventListener('click',launchAR);
+$('#dishViewer').addEventListener('load',()=>void updateARAvailability());
+$('#dishViewer').addEventListener('ar-status',e=>{if(e.detail?.status==='failed')arNotice('La sesión de realidad aumentada falló. Revisa los permisos y Servicios de Google Play para RA. El plato sigue disponible en 3D.');});
 $('#addOrder').addEventListener('click',addDish);
 $('#openOrder').addEventListener('click',()=>{updateOrder();openDialog($('#orderDialog'));});
 $('#closeOrder').addEventListener('click',()=>closeDialog($('#orderDialog')));
