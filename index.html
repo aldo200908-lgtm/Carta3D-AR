@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#151b15" />
+  <meta name="description" content="Descubre la carta de Casa Oliva. Explora platos en 3D y míralos sobre tu mesa con realidad aumentada." />
+  <title>Casa Oliva — Una carta que cobra vida</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script type="module" src="https://unpkg.com/@google/model-viewer@4.4.0/dist/model-viewer.min.js"></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="announcement"><span class="pulse"></span> Una nueva forma de descubrir tu próximo plato <span class="announcement-cross">✳</span> Menú digital interactivo</div>
+  <header class="site-header" id="top">
+    <div class="header-inner container">
+      <a class="wordmark" href="#top" aria-label="Casa Oliva, inicio"><span class="brand-icon">✳</span><span>casa <strong>oliva.</strong></span></a>
+      <nav class="header-nav" aria-label="Principal"><a href="#carta">Nuestra carta</a><a href="#como-funciona">La experiencia</a></nav>
+      <div class="header-actions"><button class="table-pill" id="tableInfo" aria-label="Cambiar número de mesa"><span class="table-mark">◌</span> Mesa <span data-table>07</span></button><button class="header-qr" id="openQr" aria-label="Ver y generar QR de esta mesa" title="QR de la mesa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h4v4h-4zM21 14v3M14 21h4M21 21v-2"/></svg><span>Mi QR</span></button></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero" aria-label="Presentación de Casa Oliva">
+      <div class="hero-media"><img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1600&q=85" alt="Interior de restaurante con luz cálida" fetchpriority="high"><div class="hero-vignette"></div></div>
+      <div class="container hero-content">
+        <div class="hero-copy"><div class="eyebrow hero-eyebrow"><span class="tiny-line"></span> BIENVENIDO A CASA OLIVA</div>
+          <h1>Tu próximo antojo, <em>más cerca que nunca.</em></h1>
+          <p>Una carta para descubrir sin prisas. Elige un plato, explóralo en 3D y descubre cómo se vería en tu propia mesa.</p>
+          <div class="hero-buttons"><a class="btn btn-primary" href="#carta">Explorar la carta <span>↗</span></a><button class="btn btn-ghost" id="heroScan">Escanear QR <span class="arrow-plain">▧</span></button></div>
+        </div>
+        <div class="hero-bottom"><span>COCINA CON PERSONALIDAD</span><span class="hero-scroll">DESLIZA PARA DESCUBRIR <span>↓</span></span><span>EST. 2026</span></div>
+      </div>
+    </section>
+
+    <section class="intro container" id="como-funciona"><div class="intro-tag"><span class="star-spark">✳</span> UNA CARTA, OTRA EXPERIENCIA</div><div class="intro-content"><h2>La comida entra <em>por los ojos.</em></h2><p>Ya no necesitas imaginar cómo será tu elección. Cada plato tiene su propia vista interactiva para que lo descubras antes de pedirlo.</p></div><div class="experience-steps"><div><span class="step-icon">01</span><span>Elige un plato</span></div><span class="step-separator">→</span><div><span class="step-icon">02</span><span>Explóralo en 3D</span></div><span class="step-separator">→</span><div><span class="step-icon">03</span><span>Míralo en tu mesa</span></div></div></section>
+
+    <section class="menu-section" id="carta"><div class="container"><div class="menu-header"><div><div class="eyebrow dark-eyebrow">HECHO PARA DISFRUTAR</div><h2>Nuestra <em>carta.</em></h2><p>Platos para antojarte. Toca cualquiera y descubre su versión en 3D.</p></div><div class="menu-stamp"><span>✳</span> <small>SABORES QUE<br>SE RECUERDAN</small></div></div>
+      <div class="menu-tools"><div class="category-tabs" role="tablist" aria-label="Filtrar platos"><button role="tab" aria-selected="true" data-cat="Todos">Todos los platos</button><button role="tab" aria-selected="false" data-cat="Principales">Principales</button><button role="tab" aria-selected="false" data-cat="Pizzas">Pizzas</button><button role="tab" aria-selected="false" data-cat="Especiales">Especiales</button><button role="tab" aria-selected="false" data-cat="Postres">Postres</button></div><label class="search-field"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg><input type="search" id="dishSearch" placeholder="Buscar plato..." aria-label="Buscar plato"></label></div>
+      <div id="dishGrid" class="dish-grid" aria-live="polite"></div>
+      <div class="empty-state" id="emptyState" hidden><span>✳</span><h3>No encontramos ese plato</h3><p>Prueba con otra búsqueda o elige una categoría.</p><button class="btn btn-dark" id="resetFilters">Ver todos los platos</button></div>
+      <p class="menu-footnote"><span>✳</span> Los precios, fotografías y modelos son demostrativos. Consulta al restaurante por ingredientes y alérgenos.</p>
+    </div></section>
+
+    <section class="closing-section"><div class="closing-inner container"><div class="closing-decoration">✳</div><div class="eyebrow closing-eyebrow">DESCUBRE OTRA PERSPECTIVA</div><h2>No solo lo veas.<br><em>Imagínalo aquí.</em></h2><p>En un teléfono compatible, puedes proyectar virtualmente tu plato sobre la mesa. Sin instalar una aplicación.</p><a href="#carta" class="btn btn-light">Descubrir los platos <span>↗</span></a><div class="closing-rule"></div><div class="closing-bottom"><span>CASA OLIVA · EXPERIENCIA DIGITAL</span><span>CON AMOR POR LA BUENA MESA</span></div></div></section>
+  </main>
+
+  <footer class="footer"><div class="container footer-inner"><a class="wordmark footer-logo" href="#top"><span class="brand-icon">✳</span><span>casa <strong>oliva.</strong></span></a><p>Una nueva manera de elegir lo que te gusta.</p><span>Demo de carta interactiva 3D · 2026</span></div></footer>
+
+  <button class="order-float" id="openOrder" hidden aria-label="Abrir selección"><span class="order-icon">♧</span><span>Mi selección</span><span class="order-count" id="orderCount">0</span><strong id="orderTotal">S/ 0</strong><span>↑</span></button>
+
+  <dialog id="dishDialog" class="dish-dialog"><div class="dish-modal"><button class="modal-close" id="closeDish" aria-label="Cerrar detalle">×</button><div class="modal-visual"><div class="viewer-topline"><span class="viewer-dot"></span> VISTA INTERACTIVA EN 3D <span class="viewer-live">● EN VIVO</span></div><model-viewer id="dishViewer" src="" alt="Modelo tridimensional de un plato" ar ar-modes="webxr scene-viewer quick-look" ar-placement="floor" ar-scale="auto" camera-controls auto-rotate rotation-per-second="15deg" shadow-intensity="1" shadow-softness="0.8" environment-image="neutral" exposure="1.1" interaction-prompt="auto" camera-orbit="30deg 65deg 110%" min-camera-orbit="auto auto 50%" max-camera-orbit="auto auto 250%" touch-action="pan-y"><button slot="ar-button" class="ar-button" id="arButton"> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="m12 2 8 4.6v9L12 20l-8-4.4v-9L12 2Z"/><path d="m4 6.6 8 4.6 8-4.6M12 11.2V20"/></svg> Ver en mi mesa <span>↗</span></button><div slot="progress-bar" class="progress-bar"><div id="progressFill"></div></div></model-viewer><div class="viewer-instruction"><span>↻ Arrastra para girar</span><span>⌁ Pellizca para acercar</span></div><div class="ar-fallback" id="arFallback">La realidad aumentada requiere un móvil y navegador compatibles. Puedes explorar el plato en 3D aquí.</div></div><div class="modal-details"><div class="eyebrow dark-eyebrow" id="detailCategory">ESPECIALIDAD</div><h2 id="detailName">Plato</h2><p id="detailDescription"></p><div class="detail-rule"></div><div class="detail-info"><span>INGREDIENTES PRINCIPALES</span><p id="detailIngredients"></p></div><div class="detail-note"><span>✳</span> Modelo 3D ilustrativo. El tamaño y la presentación real pueden variar.</div><div class="modal-cta"><div class="modal-price"><small>Precio por plato</small><strong id="detailPrice">S/ 00</strong></div><button class="btn btn-dark" id="addOrder">Añadir a mi selección <span>＋</span></button></div></div></div></dialog>
+
+  <dialog id="orderDialog" class="small-dialog"><div class="small-dialog-body"><button class="modal-close" id="closeOrder" aria-label="Cerrar selección">×</button><div class="eyebrow dark-eyebrow">TU MESA · <span data-table>07</span></div><h2>Tu <em>selección.</em></h2><p class="dialog-subtext">Revisa tus platos. Esta demo no envía pedidos al restaurante.</p><div id="orderItems" class="order-items"></div><div class="order-summary"><span>Total estimado</span><strong id="fullTotal">S/ 0.00</strong></div><button class="btn btn-dark full-width" id="copyOrder">Copiar selección para el mesero <span>↗</span></button></div></dialog>
+
+  <dialog id="qrDialog" class="small-dialog"><div class="small-dialog-body qr-dialog-body"><button class="modal-close" id="closeQr" aria-label="Cerrar QR">×</button><div class="eyebrow dark-eyebrow">CADA MESA, SU CARTA</div><h2>Tu código <em>QR.</em></h2><p class="dialog-subtext">Genera el código que abrirá esta carta con el número de mesa seleccionado.</p><label class="field-label" for="tableInput">NÚMERO DE MESA</label><div class="table-input-row"><input id="tableInput" type="number" inputmode="numeric" min="1" max="999" value="7" aria-label="Número de mesa"><button class="btn btn-dark" id="generateQr">Generar QR <span>↗</span></button></div><div id="qrCanvas" class="qr-canvas"><span class="qr-loading">✳</span></div><p id="qrStatus" class="qr-status">Publica esta web en HTTPS para compartir un QR real.</p><button class="outline-button" id="copyUrl"><span>⧉</span> Copiar enlace de esta mesa</button><button class="outline-button" id="downloadQr"><span>↓</span> Descargar QR como imagen</button></div></dialog>
+
+  <dialog id="scanDialog" class="small-dialog"><div class="small-dialog-body"><button class="modal-close" id="closeScanner" aria-label="Cerrar escáner">×</button><div class="eyebrow dark-eyebrow">CÁMARA DEL DISPOSITIVO</div><h2>Escanear <em>QR.</em></h2><p class="dialog-subtext">Entra con la cámara de tu teléfono o usa el lector para reconocer el QR de una mesa.</p><div id="qr-reader" class="reader"></div><p id="scanStatus" class="scanner-status" role="status">Permite el acceso a la cámara cuando el navegador lo solicite.</p><button id="stopScanner" class="outline-button">Detener cámara</button></div></dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
