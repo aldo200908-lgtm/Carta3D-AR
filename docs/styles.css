@@ -14,3 +14,5 @@ dialog{border:0;padding:0;max-height:calc(100dvh - 24px);box-shadow:0 36px 110px
 
 /* CTA independiente del visor nativo de Google: la AR se inicia solo con WebXR / Quick Look. */
 .ar-action-wrap{display:flex;justify-content:center;padding:2px 18px 16px;background:#e4e5dd}.ar-action-wrap .ar-button{position:static;transform:none;width:100%;max-width:320px;justify-content:center;bottom:auto;left:auto;min-height:46px;cursor:pointer}.ar-action-wrap .ar-button:disabled{opacity:.65;cursor:wait}.ar-action-wrap .ar-button:focus-visible{outline:3px solid #819c77;outline-offset:3px}.ar-fallback{display:block;font-size:11px;padding:12px 24px 15px;line-height:1.7}.ar-fallback[hidden]{display:none!important}
+
+.viewer-feedback{padding:0 24px 12px;color:#3c503d;font-size:12px;line-height:1.6}.viewer-feedback p{margin:0}.viewer-feedback button{background:#fff;min-height:44px}.viewer-feedback [hidden]{display:none!important}

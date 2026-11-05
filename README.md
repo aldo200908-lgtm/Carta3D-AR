@@ -35,5 +35,12 @@ Para cámara y AR usa HTTPS y un navegador/dispositivo compatibles.
 
 - Los platos y precios son ficticios y se editan en `docs/app.js`.
 - Los modelos son ilustraciones 3D estilizadas, no escaneos reales de alimentos.
-- Las fotos, fuentes y librerías se sirven desde terceros y requieren Internet.
+- El visor 3D se sirve desde `docs/assets/vendor/` (model-viewer 4.4.0, licencia Apache 2.0); fotos, fuentes y herramientas QR requieren Internet.
 - No cuenta con pago, registro, inventario ni envío de órdenes a cocina.
+
+## Comprobación del visor
+
+`node --test tests/*.test.cjs` prueba carga, errores y cambios de plato.
+El visor prepara automáticamente AR al cargar el modelo; si falla muestra un error persistente y permite reintentar. WebXR necesita un móvil compatible con ARCore, HTTPS y permisos de cámara; iOS usa Quick Look. No se abre Google Scene Viewer por el cierre reportado.
+
+La validación de archivos GLB y pruebas de estados no sustituyen una prueba física: comprobar en Chrome Android/iOS que el plato se coloca en una superficie y que se puede salir de AR y abrir otro plato.
