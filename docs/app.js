@@ -48,6 +48,14 @@ function renderCards(){const items=dishes.filter(d=>(activeCat==='Todos'||d.cate
 // En Android, Scene Viewer de Google puede cerrarse y bloquear la aplicación Google.
 // No usamos scene-viewer: WebXR (Chrome) o Quick Look (iOS) son los únicos modos.
 let arCheckId=0, arReady=false, arChecking=false, viewerTimer=null;
+function supports3D(){
+ try{
+  const gl=document.createElement('canvas').getContext('webgl2');
+  if(!gl)return false;
+  gl.getExtension('WEBGL_lose_context')?.loseContext();
+  return true;
+ }catch{return false;}
+}
 function viewerFailure(message){
  clearTimeout(viewerTimer); arCheckId++; arChecking=false; arReady=false;
  $('#viewerStatus').textContent=message;
@@ -157,7 +165,7 @@ function launchAR(){
 }
 
 function openDish(id){const d=dishes.find(x=>x.id===id);if(!d)return;selected=d;$('#detailName').textContent=d.name;$('#detailCategory').textContent=d.category.toUpperCase()+' · CARTA 3D';$('#detailDescription').textContent=d.desc;$('#detailIngredients').textContent=d.ingredients;$('#detailPrice').textContent=money(d.price);resetARButton();
- const viewer=$('#dishViewer');viewer.setAttribute('alt',`Modelo 3D ilustrativo de ${d.name}`);viewer.setAttribute('src',d.model);viewer.setAttribute('camera-target','auto auto auto');$('#progressFill').style.width='0%';openDialog($('#dishDialog'));watchViewer();}
+ const viewer=$('#dishViewer');viewer.setAttribute('alt',`Modelo 3D ilustrativo de ${d.name}`);viewer.setAttribute('src',d.model);viewer.setAttribute('camera-target','auto auto auto');$('#progressFill').style.width='0%';openDialog($('#dishDialog'));watchViewer();if(!supports3D())viewerFailure('No se pudo iniciar el motor 3D del navegador. Abre la carta en Chrome o Safari con aceleración gráfica y vuelve a intentarlo.');}
 function totals(){let count=0,total=0;for(const [k,n] of Object.entries(order)){const d=dishes.find(x=>x.id===k);if(d){count+=n;total+=d.price*n;}}return {count,total};}
 function updateOrder(){let {count,total}=totals();$('#openOrder').hidden=count===0;$('#orderCount').textContent=count;$('#orderTotal').textContent=money(total);$('#fullTotal').textContent=money(total);try{localStorage.setItem('casaOlivaOrder',JSON.stringify(order))}catch{}
  $('#orderItems').innerHTML=count===0?'<p class="order-empty">Aún no has elegido platos. Explora nuestra carta para añadir alguno.</p>':dishes.filter(d=>order[d.id]).map(d=>`<div class="order-row"><div><h3>${esc(d.name)}</h3><small>${money(d.price)} c/u</small></div><div class="order-row-right"><strong>${money(d.price*order[d.id])}</strong><div class="qty-controls"><button aria-label="Quitar un ${esc(d.name)}" data-qty="${d.id}" data-delta="-1">−</button><span>${order[d.id]}</span><button aria-label="Añadir un ${esc(d.name)}" data-qty="${d.id}" data-delta="1">+</button></div></div></div>`).join('');
@@ -196,6 +204,7 @@ $('#retryViewer').addEventListener('click',()=>{
 $('#arButton').addEventListener('click',launchAR);
 $('#dishViewer').addEventListener('load',()=>{
  if(!$('#dishDialog').open)return;
+ if(!supports3D()){viewerFailure('No se pudo iniciar el motor 3D del navegador. Abre la carta en Chrome o Safari con aceleración gráfica y vuelve a intentarlo.');return;}
  clearTimeout(viewerTimer);$('#viewerStatus').textContent='Plato 3D listo. Arrastra para girarlo.';
  $('#retryViewer').hidden=true;$('#arButton').disabled=false;
  if(!arChecking && !arReady)void checkAR();

@@ -2,14 +2,14 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const vm=require('node:vm');
 const fs=require('node:fs');
-function app({supported=true,loaded=true}={}) {
+function app({supported=true,loaded=true,webgl=true}={}) {
  class El extends EventTarget {
   constructor(){super();this.style={};this.dataset={};this.classList={add(){},remove(){}};this.open=false;this.loaded=loaded;this.canActivateAR=supported;this.attrs={};}
   setAttribute(k,v){this.attrs[k]=v;} removeAttribute(k){delete this.attrs[k];}
   showModal(){this.open=true;} close(){this.open=false;this.dispatchEvent(new Event('close'));}
  }
  const els=new Map();const el=s=>{if(!els.has(s))els.set(s,new El());return els.get(s);};
- const ctx={console,URL,Event,Promise,setTimeout,clearTimeout,location:{href:'https://example.com/Carta3D-AR/'},history:{replaceState(){}},localStorage:{getItem(){},setItem(){}},sessionStorage:{getItem(){},setItem(){}},document:{querySelector:el,querySelectorAll:()=>[]},navigator:{userAgent:'Android Chrome',xr:{isSessionSupported:async()=>supported}},customElements:{get:()=>class{},whenDefined:()=>Promise.resolve()},isSecureContext:true};ctx.window=ctx;
+ const ctx={console,URL,Event,Promise,setTimeout,clearTimeout,location:{href:'https://example.com/Carta3D-AR/'},history:{replaceState(){}},localStorage:{getItem(){},setItem(){}},sessionStorage:{getItem(){},setItem(){}},document:{createElement:()=>({getContext:()=>webgl?{getExtension:()=>null}:null}),querySelector:el,querySelectorAll:()=>[]},navigator:{userAgent:'Android Chrome',xr:{isSessionSupported:async()=>supported}},customElements:{get:()=>class{},whenDefined:()=>Promise.resolve()},isSecureContext:true};ctx.window=ctx;
  vm.createContext(ctx);vm.runInContext(fs.readFileSync('docs/app.js','utf8'),ctx);
  return {el,run:code=>vm.runInContext(code,ctx)};
 }
@@ -37,4 +37,12 @@ test('a rejected AR session from a closed dish cannot overwrite the next dish',a
  a.el('#dishDialog').close();a.run("openDish('pizza')");const before=a.el('#arFallback').textContent;
  reject(new Error('cancelled'));await new Promise(r=>setImmediate(r));
  assert.equal(a.el('#arFallback').textContent,before);
+});
+
+test('missing graphics support cannot be reported as a ready 3D model',async(t)=>{
+ const a=app({webgl:false});t.after(()=>a.el('#dishDialog').close());
+ a.run("openDish('burger')");a.el('#dishViewer').dispatchEvent(new Event('load'));
+ await new Promise(r=>setImmediate(r));
+ assert.match(a.el('#viewerStatus').textContent,/No se pudo/);
+ assert.equal(a.el('#arButton').disabled,true);
 });
